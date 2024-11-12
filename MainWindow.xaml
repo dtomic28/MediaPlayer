@@ -5,8 +5,73 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MediaPlayer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="MainWindow" Height="600" Width="800">
 
+    <!-- Main Layout Grid -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Menu -->
+            <RowDefinition Height="*"/>
+            <!-- Main Content Area -->
+            <RowDefinition Height="Auto"/>
+            <!-- Bottom Controls -->
+        </Grid.RowDefinitions>
+
+        <!-- Menu Bar at the Top -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="Import" Click="Import_Click"/>
+                <MenuItem Header="Export" Click="Export_Click"/>
+                <MenuItem Header="Exit" Click="Exit_Click"/>
+            </MenuItem>
+            <MenuItem Header="Playlist">
+                <MenuItem Header="Add" Click="Add_Click"/>
+                <MenuItem Header="Remove" Click="Remove_Click"/>
+            </MenuItem>
+            <MenuItem Header="Tools">
+                <MenuItem Header="Settings" Click="Settings_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Main Content Area with Playlist and Media Display -->
+        <DockPanel Grid.Row="1" LastChildFill="True" Margin="10,10,10,0">
+            <!-- Playlist on the left -->
+            <ListView x:Name="PlaylistView" DockPanel.Dock="Left" Width="200"
+                      SelectionChanged="PlaylistView_SelectionChanged" MouseDoubleClick="PlaylistView_DoubleClick" 
+                      d:ItemsSource="{d:SampleData ItemCount=10}" Margin="0,0,10,0"/>
+
+            <!-- Media Display in a Grid to fill available space -->
+            <Grid DockPanel.Dock="Right" Margin="0,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Media Title with Border -->
+                <TextBox x:Name="MediaTitle" IsReadOnly="True" FontSize="16" Margin="0,0,0,10"/>
+
+                <!-- MediaElement with similar Border as TextBox -->
+                <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="2" Grid.Row="1">
+                    <MediaElement x:Name="MediaPlayer" LoadedBehavior="Manual" UnloadedBehavior="Stop"
+                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </Border>
+            </Grid>
+        </DockPanel>
+
+        <!-- Bottom Controls (Fixed at the bottom) -->
+        <DockPanel Grid.Row="2" Margin="10,5,10,10">
+            <Slider x:Name="ProgressSlider" DockPanel.Dock="Top" ValueChanged="ProgressSlider_ValueChanged"/>
+            <Label x:Name="CurrentTimeLabel" DockPanel.Dock="Top" HorizontalAlignment="Right" Margin="0,5,0,0"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,5,0,0">
+                <Button Content="Play/Pause" Click="PlayPause_Click" Width="60" Height="30" Margin="5,0"/>
+                <Button Content="Stop" Click="Stop_Click" Width="60" Height="30" Margin="5,0"/>
+                <Button Content="Next" Click="Next_Click" Width="60" Height="30" Margin="5,0"/>
+                <Button Content="Previous" Click="Previous_Click" Width="60" Height="30" Margin="5,0"/>
+
+                <!-- Volume Slider -->
+            </StackPanel>
+        </DockPanel>
     </Grid>
 </Window>

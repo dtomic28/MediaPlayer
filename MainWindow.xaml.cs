@@ -20,5 +20,57 @@ namespace MediaPlayer
         {
             InitializeComponent();
         }
+
+        private void Import_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Add_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Remove_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Settings_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void PlaylistView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+        }
+
+        private void PlaylistView_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+        }
+
+        private void ProgressSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+        }
+
+        private void PlayPause_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Stop_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Next_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void Previous_Click(object sender, RoutedEventArgs e)
+        {
+        }
     }
 }
