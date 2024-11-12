@@ -8,4 +8,48 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove=".gitattributes" />
+    <None Remove=".gitignore" />
+    <None Remove="Resources\Icons\pause_icon.ico" />
+    <None Remove="Resources\Icons\play_icon.ico" />
+    <None Remove="Resources\Icons\repeat_icon.ico" />
+    <None Remove="Resources\Icons\repeat_once_icon.ico" />
+    <None Remove="Resources\Icons\shuffle_icon.ico" />
+    <None Remove="Resources\Icons\skip_next_icon.ico" />
+    <None Remove="Resources\Icons\skip_prev_icon.ico" />
+    <None Remove="Resources\Icons\stop_icon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Visual\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Icons\pause_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Icons\play_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Icons\repeat_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Icons\repeat_once_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Icons\shuffle_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Icons\skip_next_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Icons\skip_prev_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Icons\stop_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
 </Project>
