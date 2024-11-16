@@ -1,10 +1,12 @@
 ﻿using MediaPlayer.Backend;
+using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using System.Xml.Linq;
 
 namespace MediaPlayer.Visual
 {
@@ -13,13 +15,9 @@ namespace MediaPlayer.Visual
     /// </summary>
     public partial class MainWindow : Window
     {
-        //private List<string> playlist = new List<string> { "Song 1", "Song 2", "Song 3" };
-
         private ObservableCollection<MultimediaFile> playlist = new ObservableCollection<MultimediaFile>
         {
-            new MultimediaFile("C:\\Users\\danijel\\Videos\\Desktop\\Desktop 2020.05.26 - 19.03.47.01.mp4", "Pop", "C:\\Users\\danijel\\Pictures\\janez.png", "Song 1", new TimeSpan(0, 3, 45), "MP3"),
-            new MultimediaFile("C:/Music/song2.mp4", "Rock", "C:\\Users\\danijel\\Pictures\\janez.png", "Song 2", new TimeSpan(0, 4, 10), "MP4"),
-            new MultimediaFile("C:/Music/song3.wav", "Jazz", "C:\\Users\\danijel\\Pictures\\janez.png", "Song 3", new TimeSpan(0, 5, 0), "WAV")
+            //new MultimediaFile("C:\\Users\\danijel\\Videos\\Desktop\\Desktop 2020.05.26 - 19.03.47.01.mp4", "Pop", "C:\\Users\\danijel\\Pictures\\janez.png"),
         };
 
         private bool isPlaying = false;
@@ -32,12 +30,12 @@ namespace MediaPlayer.Visual
             InitializeComponent();
             Init();
             PlayPauseIcon.Source = _playIcon;
-            MediaPlayer.Source = new Uri(playlist[0].FilePath);
         }
 
         private void PlayMedia(MultimediaFile file)
         {
             MediaTitle.Text = file.Title;
+            MediaPlayer.Source = new Uri(file.FilePath);
             Debug.WriteLine(file.Title);
         }
 
@@ -54,10 +52,64 @@ namespace MediaPlayer.Visual
 
         private void Import_Click(object sender, RoutedEventArgs e)
         {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "XML Files (*.xml)|*.xml",
+                Title = "Import Playlist"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    XElement root = XElement.Load(openFileDialog.FileName);
+
+                    playlist.Clear(); // Clear the current playlist
+
+                    foreach (var element in root.Elements("MultimediaFile"))
+                    {
+                        playlist.Add(new MultimediaFile(element));
+                    }
+
+                    MessageBox.Show("Playlist imported successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error importing playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void Export_Click(object sender, RoutedEventArgs e)
         {
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "XML Files (*.xml)|*.xml",
+                Title = "Export Playlist"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    XElement root = new XElement("Playlist");
+
+                    foreach (var file in playlist)
+                    {
+                        var node = new XElement("MultimediaFile");
+                        file.UpdateXML(node, isWrite: true); // Write each file to XML
+                        root.Add(node);
+                    }
+
+                    root.Save(saveFileDialog.FileName);
+
+                    MessageBox.Show("Playlist exported successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error exporting playlist: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)
@@ -98,6 +150,7 @@ namespace MediaPlayer.Visual
         {
             MediaTitle.Clear();
             MediaPlayer.Stop();
+            PlayBtn_OnClick(null!, null!);
         }
 
         private void PlayBtn_OnClick(object sender, RoutedEventArgs e)
