@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using System.Xml.Linq;
 using System.IO;
+using System.Windows.Media.Imaging;
 using TagLib;
 
 
@@ -13,6 +9,7 @@ namespace MediaPlayer.Backend
 {
     class MultimediaFile
     {
+        private static readonly BitmapImage DefaultImageUri = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/albumart.jpg"));
 
         private string filePath = null!;
         private string genre = null!;
@@ -20,7 +17,7 @@ namespace MediaPlayer.Backend
         private string title = null!;
         private TimeSpan duration;
         private string format = null!;
-
+        private BitmapImage image = null!;
 
         public MultimediaFile(string filePath, string genre, string imgPath)
         {
@@ -32,9 +29,41 @@ namespace MediaPlayer.Backend
 
             this.filePath = filePath;
             this.genre = genre;
-            this.imgPath = imgPath;
 
             ParseMetadata();
+        }
+
+        private void ExtractAlbumArt()
+        {
+            try
+            {
+                var file = TagLib.File.Create(filePath);
+
+                // Check if there is embedded artwork
+                if (file.Tag.Pictures != null && file.Tag.Pictures.Length > 0)
+                {
+                    var pictureData = file.Tag.Pictures[0].Data.Data;
+
+                    // Create a memory stream for the image data
+                    using (var ms = new MemoryStream(pictureData))
+                    {
+                        var bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.StreamSource = ms;
+                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmap.EndInit();
+                        image = bitmap;
+                    }
+                }
+                else
+                {
+                    image = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/albumart.jpg"));
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error trying to extract album art: {e.Message}");
+            }
         }
 
         public MultimediaFile(XElement node)
@@ -84,6 +113,7 @@ namespace MediaPlayer.Backend
             {
                 Console.WriteLine($"Error parsing metadata for {FilePath}: {ex.Message}");
             }
+            ExtractAlbumArt();
         }
 
         public void UpdateXML(XElement node, bool isWrite)
@@ -91,7 +121,7 @@ namespace MediaPlayer.Backend
             if (node == null)
                 return;
 
-            if(isWrite)
+            if (isWrite)
                 WriteXml(node);
             else
                 ReadXml(node);
@@ -122,5 +152,7 @@ namespace MediaPlayer.Backend
         public TimeSpan Duration => duration;
 
         public string Format => format;
+
+        public BitmapImage Image => image;
     }
 }

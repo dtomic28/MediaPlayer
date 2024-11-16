@@ -150,6 +150,7 @@ namespace MediaPlayer.Visual
         {
             MediaTitle.Clear();
             MediaPlayer.Stop();
+            isPlaying = true; 
             PlayBtn_OnClick(null!, null!);
         }
 
