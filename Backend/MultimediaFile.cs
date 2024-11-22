@@ -7,17 +7,17 @@ using TagLib;
 
 namespace MediaPlayer.Backend
 {
-    class MultimediaFile
+    public class MultimediaFile
     {
         private static readonly BitmapImage DefaultImageUri = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/albumart.jpg"));
 
-        private string filePath = null!;
-        private string genre = null!;
-        private string imgPath = null!;
-        private string title = null!;
-        private TimeSpan duration;
-        private string format = null!;
-        private BitmapImage image = null!;
+        private string _filePath = null!;
+        private string _genre = null!;
+        private string _imgPath = null!;
+        private string _title = null!;
+        private TimeSpan _duration;
+        private string _format = null!;
+        private BitmapImage _image = null!;
 
         public MultimediaFile(string filePath, string genre, string imgPath)
         {
@@ -27,8 +27,8 @@ namespace MediaPlayer.Backend
                 return;
             }
 
-            this.filePath = filePath;
-            this.genre = genre;
+            _filePath = filePath;
+            _genre = genre;
 
             ParseMetadata();
         }
@@ -37,7 +37,7 @@ namespace MediaPlayer.Backend
         {
             try
             {
-                var file = TagLib.File.Create(filePath);
+                var file = TagLib.File.Create(_filePath);
 
                 // Check if there is embedded artwork
                 if (file.Tag.Pictures != null && file.Tag.Pictures.Length > 0)
@@ -52,12 +52,12 @@ namespace MediaPlayer.Backend
                         bitmap.StreamSource = ms;
                         bitmap.CacheOption = BitmapCacheOption.OnLoad;
                         bitmap.EndInit();
-                        image = bitmap;
+                        _image = bitmap;
                     }
                 }
                 else
                 {
-                    image = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/albumart.jpg"));
+                    _image = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/albumart.jpg"));
                 }
             }
             catch (Exception e)
@@ -70,9 +70,9 @@ namespace MediaPlayer.Backend
         {
             ReadXml(node);
 
-            if (!System.IO.File.Exists(filePath))
+            if (!System.IO.File.Exists(_filePath))
             {
-                Console.WriteLine($"File not found: {filePath}");
+                Console.WriteLine($"File not found: {_filePath}");
                 return;
             }
 
@@ -97,16 +97,16 @@ namespace MediaPlayer.Backend
         {
             try
             {
-                format = Path.GetExtension(FilePath)?.TrimStart('.').ToUpperInvariant();
+                _format = Path.GetExtension(FilePath)?.TrimStart('.').ToUpperInvariant();
 
-                title = Path.GetFileNameWithoutExtension(FilePath);
+                _title = Path.GetFileNameWithoutExtension(FilePath);
 
-                duration = ExtractDuration(FilePath);
+                _duration = ExtractDuration(FilePath);
 
                 if (!string.IsNullOrEmpty(ImgPath) && !System.IO.File.Exists(ImgPath))
                 {
                     Console.WriteLine($"Image file not found: {ImgPath}");
-                    imgPath = string.Empty;
+                    _imgPath = string.Empty;
                 }
             }
             catch (Exception ex)
@@ -116,7 +116,7 @@ namespace MediaPlayer.Backend
             ExtractAlbumArt();
         }
 
-        public void UpdateXML(XElement node, bool isWrite)
+        public void UpdateXml(XElement node, bool isWrite)
         {
             if (node == null)
                 return;
@@ -129,30 +129,42 @@ namespace MediaPlayer.Backend
 
         private void WriteXml(XElement node)
         {
-            node.Add(new XElement("FilePath", filePath));
-            node.Add(new XElement("Genre", genre));
-            node.Add(new XElement("ImagePath", imgPath));
+            node.Add(new XElement("FilePath", _filePath));
+            node.Add(new XElement("Genre", _genre));
+            node.Add(new XElement("ImagePath", _imgPath));
         }
 
         private void ReadXml(XElement node)
         {
-            filePath = node.Element("FilePath")?.Value ?? string.Empty;
-            genre = node.Element("Genre")?.Value ?? string.Empty;
-            imgPath = node.Element("ImagePath")?.Value ?? string.Empty;
+            _filePath = node.Element("FilePath")?.Value ?? string.Empty;
+            _genre = node.Element("Genre")?.Value ?? string.Empty;
+            _imgPath = node.Element("ImagePath")?.Value ?? string.Empty;
         }
 
-        public string FilePath => filePath;
+        public string FilePath => _filePath;
 
-        public string Genre => genre;
+        public string Genre => _genre;
 
-        public string ImgPath => imgPath;
+        public string ImgPath => _imgPath;
 
-        public string Title => title;
+        public string Title => _title;
 
-        public TimeSpan Duration => duration;
+        public TimeSpan Duration => _duration;
 
-        public string Format => format;
+        public string Format => _format;
 
-        public BitmapImage Image => image;
+        public BitmapImage Image => _image;
+
+        public void UpdatePath(string path)
+        {
+            if (!System.IO.File.Exists(path))
+            {
+                Console.WriteLine($"File not found: {path}");
+                return;
+            }
+
+            this._filePath = path;
+            ParseMetadata();
+        }
     }
 }
