@@ -36,6 +36,7 @@
             <MenuItem Header="Playlist">
                 <MenuItem Header="Add" Command="{Binding AddCommand}"/>
                 <MenuItem Header="Remove" Command="{Binding RemoveCommand}"/>
+                <MenuItem Header="Edit" Command="{Binding EditCommand}"/>
             </MenuItem>
             <MenuItem Header="Tools">
                 <MenuItem Header="Settings" Command="{Binding SettingsCommand}"/>

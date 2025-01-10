@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Xml.Linq;
 using System.IO;
 using System.Windows.Media.Imaging;
@@ -23,7 +24,7 @@ namespace MediaPlayer.Backend
         {
             if (!System.IO.File.Exists(filePath))
             {
-                Console.WriteLine($"File not found: {filePath}");
+                Debug.WriteLine($"File not found: {filePath}");
                 return;
             }
 
@@ -62,7 +63,7 @@ namespace MediaPlayer.Backend
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error trying to extract album art: {e.Message}");
+                Debug.WriteLine($"Error trying to extract album art: {e.Message}");
             }
         }
 
@@ -72,7 +73,7 @@ namespace MediaPlayer.Backend
 
             if (!System.IO.File.Exists(_filePath))
             {
-                Console.WriteLine($"File not found: {_filePath}");
+                Debug.WriteLine($"File not found: {_filePath}");
                 return;
             }
 
@@ -88,7 +89,7 @@ namespace MediaPlayer.Backend
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error extracting duration: {ex.Message}");
+                Debug.WriteLine($"Error extracting duration: {ex.Message}");
                 return TimeSpan.Zero;
             }
         }
@@ -105,13 +106,13 @@ namespace MediaPlayer.Backend
 
                 if (!string.IsNullOrEmpty(ImgPath) && !System.IO.File.Exists(ImgPath))
                 {
-                    Console.WriteLine($"Image file not found: {ImgPath}");
+                    Debug.WriteLine($"Image file not found: {ImgPath}");
                     _imgPath = string.Empty;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error parsing metadata for {FilePath}: {ex.Message}");
+                Debug.WriteLine($"Error parsing metadata for {FilePath}: {ex.Message}");
             }
             ExtractAlbumArt();
         }
@@ -159,7 +160,7 @@ namespace MediaPlayer.Backend
         {
             if (!System.IO.File.Exists(path))
             {
-                Console.WriteLine($"File not found: {path}");
+                Debug.WriteLine($"File not found: {path}");
                 return;
             }
 
