@@ -6,18 +6,21 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Xml.Linq;
+using MediaPlayer.Visual;
 
 namespace MediaPlayer.Backend
 {
     public class ViewModel : INotifyPropertyChanged
     {
         private MultimediaFile? _selectedFile = null;
+        private int _selectedFileIndex = -1;
 
         public ObservableCollection<MultimediaFile> Playlist { get; }
 
         private ObservableCollection<string> genreList;
 
         private SettingsWindow? settingsWindow = null;
+        private AddSongWindow? addSongWindow = null;
 
         public bool CanRemoveOrEdit => _selectedFile != null;
         public MultimediaFile? SelectedFile
@@ -26,6 +29,7 @@ namespace MediaPlayer.Backend
             set
             {
                 _selectedFile = value;
+                _selectedFileIndex = Playlist.IndexOf(_selectedFile);
 
                 // Notify RemoveCommand and EditCommand
                 (RemoveCommand as RelayCommand)?.RaiseCanExecuteChanged();
@@ -133,10 +137,16 @@ namespace MediaPlayer.Backend
 
         private void AddMultimediaFile()
         {
-            string Path = AppDomain.CurrentDomain.BaseDirectory +
-                          @"..\..\..\Resources\Music\Frenkie - Izgubljeni Snovi.mp3";
-            Debug.Print(Path);
-            Playlist.Add(new MultimediaFile(Path, "Genre", "C:/example/image.jpg"));
+            if (addSongWindow == null)
+            {
+                addSongWindow = new AddSongWindow(Playlist, genreList);
+                addSongWindow.Closed += (s, args) => addSongWindow = null;  // Release reference when closed
+                addSongWindow.ShowDialog();
+            }
+            else
+            {
+                addSongWindow.Focus();  // Bring the already open window to the front
+            }
         }
 
         private void RemoveSelectedFile()
@@ -146,7 +156,18 @@ namespace MediaPlayer.Backend
 
         private void EditSelectedFile()
         {
-            SelectedFile?.UpdatePath("C:/example/editedfile.mp4");
+            if (addSongWindow == null)
+            {
+                addSongWindow = new AddSongWindow(Playlist, genreList);
+                addSongWindow.SetSelectedFile(Playlist.IndexOf(SelectedFile!));
+                addSongWindow.Closed += (s, args) => addSongWindow = null;  // Release reference when closed
+                addSongWindow.ShowDialog();
+            }
+            else
+            {
+                addSongWindow.SetSelectedFile(Playlist.IndexOf(SelectedFile!));
+                addSongWindow.Focus();  // Bring the already open window to the front
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
