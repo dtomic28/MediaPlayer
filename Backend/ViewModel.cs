@@ -14,6 +14,11 @@ namespace MediaPlayer.Backend
         private MultimediaFile? _selectedFile = null;
 
         public ObservableCollection<MultimediaFile> Playlist { get; }
+
+        private ObservableCollection<string> genreList;
+
+        private SettingsWindow? settingsWindow = null;
+
         public bool CanRemoveOrEdit => _selectedFile != null;
         public MultimediaFile? SelectedFile
         {
@@ -36,17 +41,32 @@ namespace MediaPlayer.Backend
         public ICommand ExitCommand { get; }
         public ICommand SettingsCommand { get; }
 
-        public ViewModel(ObservableCollection<MultimediaFile> playlist)
+        public ViewModel(ObservableCollection<MultimediaFile> playlist, ObservableCollection<string> genreList)
         {
             Playlist = playlist;
-
+            this.genreList = genreList;
             ImportCommand = new RelayCommand(ImportPlaylist);
             ExportCommand = new RelayCommand(ExportPlaylist);
             AddCommand = new RelayCommand(AddMultimediaFile);
             RemoveCommand = new RelayCommand(RemoveSelectedFile, () => _selectedFile != null);
             EditCommand = new RelayCommand(EditSelectedFile, () => _selectedFile != null);
             ExitCommand = new RelayCommand(() => Application.Current.Shutdown());
-            SettingsCommand = new RelayCommand(() => MessageBox.Show("Settings clicked"));
+            SettingsCommand = new RelayCommand(OpenSettings);
+        }
+
+        private void OpenSettings()
+        {
+            if (settingsWindow == null)
+            {
+                settingsWindow = new SettingsWindow(genreList);
+                settingsWindow.Closed += (s, args) => settingsWindow = null;  // Release reference when closed
+                settingsWindow.ShowDialog();
+            }
+            else
+            {
+                settingsWindow.Focus();  // Bring the already open window to the front
+            }
+
         }
 
         private void ImportPlaylist()
