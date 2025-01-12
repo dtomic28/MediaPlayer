@@ -6,25 +6,25 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using System.Xml.Linq;
 
 namespace MediaPlayer.Visual
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         private ObservableCollection<MultimediaFile> playlist = new ObservableCollection<MultimediaFile>();
         private ObservableCollection<string> genreList = new ObservableCollection<string>();
 
-        private bool _isPlaying = false;
-        private BitmapImage _playIcon = new BitmapImage(new Uri("pack://application:,,,/Resources/Icons/play_icon.ico"));
-        private BitmapImage _pauseIcon = new BitmapImage(new Uri("pack://application:,,,/Resources/Icons/pause_icon.ico"));
         private ViewModel _vm;
-        private bool IsSelected;
+        private bool _isPlaying = false;
+        private bool _isRepeating = false;
 
+        private DispatcherTimer _progressTimer;
+        private Slider slider;
+        private Label currentTimeLabel;
 
         public MainWindow()
         {
@@ -32,74 +32,9 @@ namespace MediaPlayer.Visual
             InitializeComponent();
             LoadGenres();
             Init();
-            PlayPauseIcon.Source = _playIcon;
             DataContext = _vm;
         }
 
-        private void PlayMedia(MultimediaFile file)
-        {
-            try
-            {
-                MediaTitle.Text = file.Title;
-                MediaPlayer.Source = new Uri(file.FilePath);
-                Debug.WriteLine(file.Title);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Error playing file: {file.FilePath}");
-            }
-        }
-
-        private void Reset()
-        {
-            MediaTitle.Clear();
-        }
-
-        public void Init()
-        {
-            CurrentTimeLabel.Content = "--:--";
-            PlaylistView.ItemsSource = playlist;
-        }
-        
-        private void PlaylistView_DoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if ((PlaylistView.SelectedItem is MultimediaFile file))
-            {
-                PlayMedia(file);
-            }
-        }
-
-        private void ProgressSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-        }
-
-
-        private void StopBtn_OnClick(object sender, RoutedEventArgs e)
-        {
-            MediaTitle.Clear();
-            MediaPlayer.Stop();
-            _isPlaying = true; 
-            PlayBtn_OnClick(null!, null!);
-        }
-
-        private void PlayBtn_OnClick(object sender, RoutedEventArgs e)
-        {
-            _isPlaying = !_isPlaying;
-            PlayPauseIcon.Source = _isPlaying ? _pauseIcon : _playIcon;
-
-            if (_isPlaying)
-            {
-                MediaPlayer.Play();
-            }
-            else
-            {
-                MediaPlayer.Pause();
-            }
-        }
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
-        {
-            Reset();
-        }
 
         private void PlaylistView_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -111,6 +46,122 @@ namespace MediaPlayer.Visual
                 PlaylistView.SelectedItem = null;
                 _vm.SelectedFile = clickedItem;
             }
+        }
+
+        private void PlayMedia(MultimediaFile file)
+        {
+            try
+            {
+                MediaTitle.Text = file.Title;
+                MediaPlayer.Source = new Uri(file.FilePath);
+                MediaPlayer.Play();
+                _isPlaying = true;
+                MediaControl.SetPlayPauseIcon(true);
+                _progressTimer.Start();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Error playing file: {file.FilePath} - {e.Message}");
+            }
+        }
+
+        private void Reset(object sender, RoutedEventArgs routedEventArgs)
+        {
+            MediaTitle.Clear();
+            MediaPlayer.Stop();
+            _isPlaying = false;
+            MediaControl.SetPlayPauseIcon(false);
+        }
+
+        public void Init()
+        {
+            PlaylistView.ItemsSource = playlist;
+            _progressTimer = new DispatcherTimer();
+            _progressTimer.Interval = TimeSpan.FromSeconds(1); // Update every second
+            _progressTimer.Tick += ProgressTimer_Tick;
+            slider = MediaControl.GetProgressSlider(); 
+            currentTimeLabel = MediaControl.GetCurrentTimeLabel();
+        }
+
+        private void ProgressTimer_Tick(object? sender, EventArgs e)
+        {
+            if (MediaPlayer.NaturalDuration.HasTimeSpan)
+            {
+                slider.Maximum = MediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                slider.Value = MediaPlayer.Position.TotalSeconds;
+                currentTimeLabel.Content = $"{MediaPlayer.Position.Minutes:D2}:{MediaPlayer.Position.Seconds:D2}";
+            }   
+        }
+
+
+        private void PlaylistView_DoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (PlaylistView.SelectedItem is MultimediaFile file)
+            {
+                PlayMedia(file);
+            }
+        }
+
+        private void MediaControl_PlayPauseClicked(object sender, EventArgs e)
+        {
+            if (MediaPlayer.Source == null && PlaylistView.SelectedItem is MultimediaFile file)
+            {
+                PlayMedia(file);
+            }
+            else
+            {
+                if (_isPlaying)
+                {
+                    MediaPlayer.Pause();
+                    _isPlaying = false;
+                    MediaControl.SetPlayPauseIcon(false);
+                }
+                else
+                {
+                    MediaPlayer.Play();
+                    _isPlaying = true;
+                    MediaControl.SetPlayPauseIcon(true);
+                }
+            }
+        }
+
+        private void MediaControl_StopClicked(object sender, EventArgs e)
+        {
+            MediaPlayer.Stop();
+            _isPlaying = false;
+            MediaControl.SetPlayPauseIcon(false);
+            _progressTimer.Stop();
+            slider.Value = 0;
+        }
+
+        private void MediaControl_SkipNextClicked(object sender, EventArgs e)
+        {
+            int nextIndex = PlaylistView.SelectedIndex + 1;
+            if (nextIndex >= playlist.Count) nextIndex = 0;
+            PlaylistView.SelectedIndex = nextIndex;
+            PlayMedia(playlist[nextIndex]);
+        }
+
+        private void MediaControl_SkipPrevClicked(object sender, EventArgs e)
+        {
+            int prevIndex = PlaylistView.SelectedIndex - 1;
+            if (prevIndex < 0) prevIndex = playlist.Count - 1;
+            PlaylistView.SelectedIndex = prevIndex;
+            PlayMedia(playlist[prevIndex]);
+        }
+
+        private void MediaControl_ShuffleClicked(object sender, EventArgs e)
+        {
+            var random = new Random();
+            int index = random.Next(playlist.Count);
+            PlaylistView.SelectedIndex = index;
+            PlayMedia(playlist[index]);
+        }
+
+        private void MediaControl_RepeatClicked(object sender, EventArgs e)
+        {
+            _isRepeating = !_isRepeating;
+            MessageBox.Show(_isRepeating ? "Repeat mode enabled." : "Repeat mode disabled.");
         }
 
         private void LoadGenres()
@@ -126,7 +177,6 @@ namespace MediaPlayer.Visual
             }
         }
 
-        // Save genres to application settings
         private void SaveGenres()
         {
             Properties.Settings.Default.GenresList.Clear();
@@ -142,6 +192,21 @@ namespace MediaPlayer.Visual
             SaveGenres();
             base.OnClosed(e);
         }
-    }
 
+        private void MediaTitle_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+
+            // Create the fade-in animation
+            DoubleAnimation fadeInAnimation = new DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = TimeSpan.FromSeconds(1)
+            };
+
+            textBox.BeginAnimation(TextBox.OpacityProperty, fadeInAnimation);
+        }
+
+    }
 }

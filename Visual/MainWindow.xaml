@@ -1,9 +1,12 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:av="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:av="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:backend="clr-namespace:MediaPlayer.Backend"
-        mc:Ignorable="av" x:Class="MediaPlayer.Visual.MainWindow"
+        xmlns:local="clr-namespace:MediaPlayer.Visual"
+        mc:Ignorable="av"
+        x:Class="MediaPlayer.Visual.MainWindow"
         Title="Media Player" Height="600" Width="800"
         MinWidth="800" MinHeight="600">
 
@@ -20,9 +23,9 @@
 
         <Grid.ColumnDefinitions>
             <!-- Define columns for left and right sections -->
-            <ColumnDefinition Width="30*"/>
+            <ColumnDefinition Width="45*"/>
             <!-- Left side: ListView, 30% of the width -->
-            <ColumnDefinition Width="70*"/>
+            <ColumnDefinition Width="55*"/>
             <!-- Right side: TextBox + MediaPlayer, 70% of the width -->
         </Grid.ColumnDefinitions>
 
@@ -45,25 +48,22 @@
 
         <!-- Playlist ListView (Left Column, 30% width) -->
         <ListView x:Name="PlaylistView"
-          Grid.Row="1"
-          Grid.Column="0"
-          ItemsSource="{Binding Playlist}"
-          SelectedItem="{Binding SelectedFile, Mode=TwoWay}"
-          Margin="10"
-          Background="White"
-          PreviewMouseDown="PlaylistView_PreviewMouseDown" av:ItemsSource="{av:SampleData ItemCount=5}"
-          MouseDoubleClick="PlaylistView_DoubleClick"
-          >
+                  Grid.Row="1"
+                  Grid.Column="0"
+                  ItemsSource="{Binding Playlist}"
+                  SelectedItem="{Binding SelectedFile, Mode=TwoWay}"
+                  Margin="10"
+                  Background="White"
+                  PreviewMouseDown="PlaylistView_PreviewMouseDown"
+                  av:ItemsSource="{av:SampleData ItemCount=5}"
+                  MouseDoubleClick="PlaylistView_DoubleClick">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border x:Name="ItemBorder" BorderBrush="LightGray" BorderThickness="0.5" CornerRadius="8" Margin="5" Padding="8"
-                    Background="White" HorizontalAlignment="Stretch">
+                            Background="White" HorizontalAlignment="Stretch">
                         <DockPanel LastChildFill="True">
-                            <!-- Image Thumbnail -->
                             <Image Source="{Binding Image}" Width="60" Height="60" Margin="0,0,10,0" Stretch="UniformToFill"
-                           DockPanel.Dock="Left" ClipToBounds="True" SnapsToDevicePixels="True" />
-
-                            <!-- Text Content -->
+                                   DockPanel.Dock="Left" ClipToBounds="True" SnapsToDevicePixels="True" />
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="14" Foreground="#333333" />
                                 <TextBlock Text="{Binding Duration}" FontSize="12" Foreground="#888888" Margin="0,2,0,0" />
@@ -113,55 +113,28 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <!-- TextBox on top -->
                 <RowDefinition Height="*"/>
-                <!-- MediaPlayer below, takes remaining space -->
             </Grid.RowDefinitions>
 
-            <!-- MediaTitle TextBox on top of the MediaPlayer -->
-            <TextBox x:Name="MediaTitle" Grid.Row="0" FontSize="16" Margin="0,0,10,10" IsReadOnly="True"/>
+            <TextBox x:Name="MediaTitle" Grid.Row="0" FontSize="16" Margin="0,0,10,10" IsReadOnly="True" TextChanged="MediaTitle_TextChanged"/>
 
-            <!-- MediaPlayer below the TextBox -->
             <Border BorderBrush="#b0acb4" BorderThickness="1" CornerRadius="8" Grid.ColumnSpan="2" Margin="0,33,0,0" Grid.RowSpan="2">
                 <MediaElement x:Name="MediaPlayer" LoadedBehavior="Manual" UnloadedBehavior="Stop"
                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Border>
             <Button Grid.Column="1" Grid.Row="0" Content="Reset" 
                     HorizontalAlignment="Stretch" VerticalAlignment="Top" 
-                    Height="23" Margin="0,0,0,0" Click="ResetButton_Click" x:Name="ResetButton"/>
+                    Height="23" Margin="0,0,0,0" Click="Reset" x:Name="ResetButton"/>
         </Grid>
 
-        <!-- Bottom Controls (Spans both columns) -->
-        <DockPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="10">
-            <Label x:Name="CurrentTimeLabel" DockPanel.Dock="Top" HorizontalAlignment="Left" Padding="0" Margin="0,0,0,5" Content="--:--"/>
-            <Slider x:Name="ProgressSlider" DockPanel.Dock="Top" ValueChanged="ProgressSlider_ValueChanged"/>
+        <!-- Replace bottom controls with the new MediaControl user control -->
+        <local:MediaControl Grid.Row="2" Grid.ColumnSpan="2" x:Name="MediaControl"
+                            PlayPauseClicked="MediaControl_PlayPauseClicked"
+                            StopClicked="MediaControl_StopClicked"
+                            SkipNextClicked="MediaControl_SkipNextClicked"
+                            SkipPrevClicked="MediaControl_SkipPrevClicked"
+                            RepeatClicked="MediaControl_RepeatClicked"
+                            ShuffleClicked="MediaControl_ShuffleClicked"/>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,5,0,0">
-                <!-- Previous Button -->
-                <Button Width="60" Height="30" Margin="5,0" x:Name="SkipPrevBtn">
-                    <Image Source="/Resources/Icons/skip_prev_icon.ico" Width="16" Height="16"/>
-                </Button>
-                <!-- Play Button -->
-                <Button Width="60" Height="30" Margin="5,0" x:Name="PlayBtn" Click="PlayBtn_OnClick">
-                    <Image  Width="16" Height="16" x:Name="PlayPauseIcon"/>
-                </Button>
-                <!-- Next Button -->
-                <Button Width="60" Height="30" Margin="5,0" x:Name="SkipNextBtn">
-                    <Image Source="/Resources/Icons/skip_next_icon.ico" Width="16" Height="16"/>
-                </Button>
-                <!-- Stop Button -->
-                <Button Width="60" Height="30" Margin="5,0" x:Name="StopBtn" Click="StopBtn_OnClick">
-                    <Image Source="/Resources/Icons/stop_icon.ico" Width="16" Height="16"/>
-                </Button>
-                <!-- Repeat Button -->
-                <Button Width="60" Height="30" Margin="5,0" x:Name="RepeatBtn">
-                    <Image Source="/Resources/Icons/repeat_icon.ico" Width="16" Height="16"/>
-                </Button>
-                <!-- Shuffle Button -->
-                <Button Width="60" Height="30" Margin="5,0" x:Name="ShuffleBtn">
-                    <Image Source="/Resources/Icons/shuffle_icon.ico" Width="16" Height="16"/>
-                </Button>
-            </StackPanel>
-        </DockPanel>
     </Grid>
 </Window>

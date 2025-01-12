@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="MediaPlayer.Visual.MediaControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             x:Name="MediaControlPanel">
+
+    <DockPanel Margin="10">
+        <Label x:Name="CurrentTimeLabel" DockPanel.Dock="Top" HorizontalAlignment="Left" Padding="0" Margin="0,0,0,5" Content="--:--" Style="{StaticResource BaseLabelStyle}"/>
+        <Slider x:Name="ProgressSlider" DockPanel.Dock="Top" ValueChanged="ProgressSlider_ValueChanged" Style="{StaticResource BaseSliderStyle}"/>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" DockPanel.Dock="Top" Margin="0,5,0,0">
+            <!-- Previous Button -->
+            <Button Width="60" Height="30" Margin="5,0" Click="SkipPrev_Click" Style="{StaticResource AnimatedButtonStyle}">
+                <Image Source="/Resources/Icons/skip_prev_icon.ico" Width="16" Height="16"/>
+            </Button>
+
+            <!-- Play Button -->
+            <Button Width="60" Height="30" Margin="5,0" Click="PlayPause_Click" Style="{StaticResource AnimatedButtonStyle}">
+                <Image x:Name="PlayPauseIcon" Width="16" Height="16" Source="/Resources/Icons/play_icon.ico"/>
+            </Button>
+
+            <!-- Next Button -->
+            <Button Width="60" Height="30" Margin="5,0" Click="SkipNext_Click" Style="{StaticResource AnimatedButtonStyle}">
+                <Image Source="/Resources/Icons/skip_next_icon.ico" Width="16" Height="16"/>
+            </Button>
+
+            <!-- Stop Button -->
+            <Button Width="60" Height="30" Margin="5,0" Click="Stop_Click" Style="{StaticResource AnimatedButtonStyle}">
+                <Image Source="/Resources/Icons/stop_icon.ico" Width="16" Height="16"/>
+            </Button>
+
+            <!-- Repeat Button -->
+            <Button Width="60" Height="30" Margin="5,0" Click="Repeat_Click" Style="{StaticResource AnimatedButtonStyle}">
+                <Image Source="/Resources/Icons/repeat_icon.ico" Width="16" Height="16"/>
+            </Button>
+
+            <!-- Shuffle Button -->
+            <Button Width="60" Height="30" Margin="5,0" Click="Shuffle_Click" Style="{StaticResource AnimatedButtonStyle}">
+                <Image Source="/Resources/Icons/shuffle_icon.ico" Width="16" Height="16"/>
+            </Button>
+        </StackPanel>
+    </DockPanel>
+</UserControl>
